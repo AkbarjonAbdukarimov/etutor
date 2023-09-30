@@ -1,0 +1,26 @@
+{
+  "name": "etutor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "start": "nodemon dist/index",
+  "dev": "concurrently  \"tsc -w\" \"nodemon dist/index.js\"",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/dotenv": "^8.2.0",
+    "@types/express": "^4.17.18",
+    "@types/mongoose": "^5.11.97",
+    "@types/multer": "^1.4.8",
+    "concurrently": "^8.2.1",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-async-errors": "^3.1.1",
+    "mongoose": "^7.5.3",
+    "multer": "^1.4.5-lts.1"
+  }
+}
