@@ -5,7 +5,6 @@ import BadRequestError from "../../Classes/Errors/BadRequestError";
 import jwt from "jsonwebtoken";
 import Req from "../../Interfaces/IReq";
 import User from "../../Models/User";
-import { MongooseError } from "mongoose";
 import IUserPayload from "../../Interfaces/IUserPayload";
 import verifyUser from "../../middleware/verifyUser";
 import JWTDecrypter from "../../utils/JWTDecrypter";
@@ -16,7 +15,7 @@ const expiresAt = parseInt(process.env.EXPIRATION || "5");
 const jwtKey = process.env.JWT || "SomeJwT_keY";
 
 userRouter.post("/get-code", async (req: Req, res: Response) => {
-  const { phone } = req.body;
+  const { phone } = req.body.user;
   var code = "0000" || Math.floor(1000 + Math.random() * 9000).toString();
   const existingUserOPT = await OTP.findOneAndUpdate(
     { phone },
@@ -35,7 +34,7 @@ userRouter.post("/get-code", async (req: Req, res: Response) => {
   res.send({ message: `One Time Password was send to ${phone}` });
 });
 userRouter.put("/verify", async (req: Req, res: Response) => {
-  const { phone, code } = req.body;
+  const { phone, code } = req.body.user;
   const opt = await OTP.findOne({ phone, code });
   if (!opt) throw new BadRequestError("Invalid Verification Credentials");
 
@@ -63,7 +62,7 @@ userRouter.post(
 
   async (req: Req, res: Response) => {
     const { name, surname, phone, email, password, dateOfBirth, address } =
-      req.body;
+      req.body.user;
     if (password.length < 4)
       throw new BadRequestError("Password Should Contain 8 to 20 Symbols");
     const existingUser = await User.findOne({ phone, email });
@@ -107,7 +106,7 @@ userRouter.post(
   "/login",
 
   async (req: Req, res: Response) => {
-    const { phone, password } = req.body;
+    const { phone, password } = req.body.user;
 
     const otp = await OTP.findOne({
       phone,
@@ -139,18 +138,18 @@ userRouter.post(
 );
 userRouter.put(
   "/update",
-  
+
   verifyUser,
 
   async (req: Req, res: Response) => {
     const author = JWTDecrypter.decryptUser<IUserPayload>(req, jwtKey);
-    
 
     if (author.exp && author.exp < Date.now())
       throw new BadRequestError("Token expired");
-    let update = { ...req.body };
+    let update = { ...req.body.user };
     const p =
-      req.body.password && (await Password.hashPassword(req.body.password));
+      req.body.user.password &&
+      (await Password.hashPassword(req.body.user.password));
     let query = {};
     if (author._id) {
       query = { ...query, _id: author._id };
@@ -165,8 +164,10 @@ userRouter.put(
       };
     }
 
-    const user = await User.findOneAndUpdate(query, update).select({password:0});
-    
+    const user = await User.findOneAndUpdate(query, update).select({
+      password: 0,
+    });
+
     res.send(user);
   }
 );
@@ -176,29 +177,29 @@ userRouter.get(
   validateUser,
   async (req: Request, res: Response) => {
     const author = JWTDecrypter.decryptUser<IUserPayload>(req, jwtKey);
-    const user = await User.findById(author._id, { password: 0 })
-      
-      // .populate({
-      //   path: "basket",
-      //   model: "Product",
-      //   populate: [
-      //     {
-      //       path: "category",
-      //       model: "Category",
-      //       select: "id name",
-      //     },
-      //     {
-      //       path: "subcategory",
-      //       model: "Subcategory",
-      //       select: "id name",
-      //     },
-      //     {
-      //       path: "vendorId",
-      //       model: "Vendor",
-      //       select: "id name description contacts",
-      //     },
-      //   ],
-      // });
+    const user = await User.findById(author._id, { password: 0 });
+
+    // .populate({
+    //   path: "basket",
+    //   model: "Product",
+    //   populate: [
+    //     {
+    //       path: "category",
+    //       model: "Category",
+    //       select: "id name",
+    //     },
+    //     {
+    //       path: "subcategory",
+    //       model: "Subcategory",
+    //       select: "id name",
+    //     },
+    //     {
+    //       path: "vendorId",
+    //       model: "Vendor",
+    //       select: "id name description contacts",
+    //     },
+    //   ],
+    // });
     res.send(user);
   }
 );

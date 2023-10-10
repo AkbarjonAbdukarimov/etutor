@@ -6,11 +6,13 @@ app.use(cors({ origin: "*" }));
 import  userRouter from "./routes/users/userRoute";
 import NotFoundError from "./Classes/Errors/NotFoundError";
 import IError from "./Interfaces/IError";
+import categoryRouter from "./routes/categories/categoryRoute";
 
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(cors({origin:"*"}))
 app.use('/api/users',userRouter )
+app.use('/api/categories',categoryRouter)
 app.all('*',(req,res)=>{
   throw new NotFoundError("Page Not Found")
 })

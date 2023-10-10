@@ -42,7 +42,7 @@ const userSchema = new Schema({
 userSchema.statics.build = (attrs: user): UserDoc => {
   return new User(attrs);
 };
-userSchema.statics.loginUser = async (phone: number, password: string): UserDoc => {
+userSchema.statics.loginUser = async (phone: number, password: string): Promise<UserDoc> => {
   const user = await User.findOne({ phone });
   const isValidPass =
     user &&
