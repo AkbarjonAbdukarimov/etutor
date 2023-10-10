@@ -2,6 +2,7 @@ import { Document, Model, Models, Schema, model } from "mongoose";
 import IUser from "../Interfaces/IUser";
 import Password from "../utils/Password";
 import BadRequestError from "../Classes/Errors/BadRequestError";
+import UserSchema from "../routes/users/userValidation";
 
 interface user {
   name: string;
@@ -19,7 +20,7 @@ interface user {
 }
 interface UserDoc extends Document, IUser {}
 interface UserModel extends Model<UserDoc> {
-  build(attrs: user): UserDoc;
+  build(attrs: user): Promise<UserDoc>;
   loginUser(phone: number, password: string): UserDoc;
 }
 const userSchema = new Schema({
@@ -39,10 +40,14 @@ const userSchema = new Schema({
   },
   //basket:[{type:Schema.Types.ObjectId, ref:Product}]
 });
-userSchema.statics.build = (attrs: user): UserDoc => {
+userSchema.statics.build = async (attrs: user): Promise<UserDoc> => {
+  await UserSchema.validateAsync(attrs);
   return new User(attrs);
 };
-userSchema.statics.loginUser = async (phone: number, password: string): Promise<UserDoc> => {
+userSchema.statics.loginUser = async (
+  phone: number,
+  password: string
+): Promise<UserDoc> => {
   const user = await User.findOne({ phone });
   const isValidPass =
     user &&

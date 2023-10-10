@@ -1,6 +1,10 @@
 import { Request } from "express";
 import ILang from "./ILanguage";
+import IAdmin from "./IAdmin";
 export default interface Req extends Request {
+  // headers: {
+  //   Authorization: string;
+  // };
   body: {
     user: {
       code: number;
@@ -16,6 +20,7 @@ export default interface Req extends Request {
         country: string;
       };
     };
+    admin: IAdmin;
     category: {
       name: ILang;
       description?: ILang;

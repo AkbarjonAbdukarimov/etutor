@@ -71,7 +71,7 @@ userRouter.post(
       throw new BadRequestError(
         `User with ${phone} and ${email} already exists`
       );
-    let user = User.build({
+    let user = await User.build({
       name,
       surname,
       phone,
