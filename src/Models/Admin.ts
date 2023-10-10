@@ -1,26 +1,36 @@
-import { Document, Model, Models, Schema, model } from "mongoose";
-import IUser from "../Interfaces/IUser";
+import { Document, Model, Schema, model } from "mongoose";
 import Password from "../utils/Password";
 import BadRequestError from "../Classes/Errors/BadRequestError";
 import IAdmin from "../Interfaces/IAdmin";
+import AdminSchema from "../routes/admins/adminValidation";
 
-interface admin  {
-  login:string;
-  password:string
+interface admin {
+  login: string;
+  password: string;
 }
 export interface AdminDoc extends Document, IAdmin {}
 interface AdminModel extends Model<AdminDoc> {
-  build(attrs: admin): AdminDoc;
-  loginAdmin(login: string, password: string): AdminDoc;
+  build(attrs: admin): Promise<AdminDoc>;
+  loginAdmin(login: string, password: string): Promise<AdminDoc>;
 }
 const adminSchema = new Schema({
-  login:{type:String, required :true},
-  password:{type:String, required:true, }
+  login: { type: String, required: true },
+  password: { type: String, required: true },
 });
-adminSchema.statics.build = (attrs: admin): AdminDoc => {
-  return new Admin(attrs);
+adminSchema.statics.build = async (attrs: admin): Promise<AdminDoc> => {
+  await AdminSchema.validateAsync(attrs);
+  const hash = await Password.hashPassword(attrs.password);
+  const admin = await Admin.create({
+    ...attrs,
+    password: `${hash.buff}.${hash.salt}`,
+  });
+  return admin;
 };
-adminSchema.statics.loginUser = async (login: string, password: string): Promise<AdminDoc> => {
+adminSchema.statics.loginAdmin = async (
+  login: string,
+  password: string
+): Promise<AdminDoc> => {
+  await AdminSchema.validateAsync({ login, password });
   const admin = await Admin.findOne({ login });
   const isValidPass =
     admin &&
@@ -32,10 +42,13 @@ adminSchema.statics.loginUser = async (login: string, password: string): Promise
 
   return admin;
 };
-adminSchema.pre("save", async function (next: Function) {
-  const hash = await Password.hashPassword(this.password);
-  this.password = `${hash.buff}.${hash.salt}`;
-  next();
+adminSchema.pre("findOneAndUpdate", async function () {
+  const docToUpdate = await this.model.findOne(this.getQuery());
+  const hash = await Password.hashPassword(docToUpdate.password);
+
+  const newPass = `${hash.buff}.${hash.salt}`;
+  this.set({ password: newPass });
 });
+
 const Admin = model<AdminDoc, AdminModel>("Admin", adminSchema);
 export default Admin;

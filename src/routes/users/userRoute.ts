@@ -107,7 +107,6 @@ userRouter.post(
 
   async (req: Req, res: Response) => {
     const { phone, password } = req.body.user;
-
     const otp = await OTP.findOne({
       phone,
       isVerified: true,
