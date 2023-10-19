@@ -9,12 +9,14 @@ import IError from "./Interfaces/IError";
 import categoryRouter from "./routes/categories/categoryRoute";
 import adminRouter from "./routes/admins/adminRoutes";
 import Req from "./Interfaces/IReq";
+import courseRoute from "./routes/courses/courseRoute";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: "*" }));
 app.use("/api/users", userRouter);
 app.use("/api/admins", adminRouter);
+app.use("/api/courses", courseRoute);
 app.use("/api/categories", categoryRouter);
 app.all("*", (req, res) => {
   throw new NotFoundError("Page Not Found");

@@ -1,14 +1,17 @@
+import ILang from "./ILanguage";
+
 export default interface ICourse {
-  title: string;
-  decription: string;
+  title: ILang;
+  decription: ILang;
   sections: ISection[];
-  price:number
+  price: number;
 }
 interface ISection {
   order: number;
+  subtitle: ILang;
   videos: IVideo[];
 }
 interface IVideo {
-  id: string;
-  link:string;
+  _id: string;
+  link: string;
 }
