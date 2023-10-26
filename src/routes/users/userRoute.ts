@@ -63,10 +63,16 @@ userRouter.post(
   async (req: Req, res: Response) => {
     const { name, surname, phone, email, password, dateOfBirth, address } =
       req.body.user;
+    const otp = await OTP.findOne({
+      phone,
+      isVerified: true,
+    });
+
+    if (!otp) throw new BadRequestError("User is not verified");
     if (password.length < 4)
       throw new BadRequestError("Password Should Contain 8 to 20 Symbols");
     const existingUser = await User.findOne({ phone, email });
-    console.log(existingUser);
+
     if (existingUser)
       throw new BadRequestError(
         `User with ${phone} and ${email} already exists`
@@ -107,6 +113,7 @@ userRouter.post(
 
   async (req: Req, res: Response) => {
     const { phone, password } = req.body.user;
+
     const otp = await OTP.findOne({
       phone,
       isVerified: true,
