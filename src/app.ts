@@ -23,6 +23,7 @@ app.all("*", (req, res) => {
 });
 app.use((err: IError, req: Req, res: Response, next: NextFunction): void => {
   console.log(err);
+  console.log(err.stack);
   console.log("---------------------");
   res.status(err.statusCode || 500).send({ message: err.message });
 });

@@ -23,6 +23,14 @@ interface UserModel extends Model<UserDoc> {
   build(attrs: user): Promise<UserDoc>;
   loginUser(phone: number, password: string): UserDoc;
 }
+const addressSchema = new Schema(
+  {
+    street: String,
+    city: String,
+    country: String,
+  },
+  { id: false, _id: false }
+);
 const userSchema = new Schema({
   name: { type: String, required: true },
   surname: { type: String, required: true },
@@ -31,11 +39,7 @@ const userSchema = new Schema({
   password: { type: String, required: true },
   dateOfBirth: { type: Date, required: true },
   address: {
-    type: {
-      street: String,
-      city: String,
-      country: String,
-    },
+    type: addressSchema,
     required: true,
   },
   //basket:[{type:Schema.Types.ObjectId, ref:Product}]

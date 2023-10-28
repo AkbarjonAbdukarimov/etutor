@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import "express-async-errors";
+//import "express-async-errors";
 import OTP from "../../Models/OTP";
 import BadRequestError from "../../Classes/Errors/BadRequestError";
 import jwt from "jsonwebtoken";
@@ -10,6 +10,8 @@ import verifyUser from "../../middleware/verifyUser";
 import JWTDecrypter from "../../utils/JWTDecrypter";
 import Password from "../../utils/Password";
 import validateUser from "../../middleware/validateUser";
+import NotFoundError from "../../Classes/Errors/NotFoundError";
+import UserSchema from "./userValidation";
 const userRouter = Router();
 const expiresAt = parseInt(process.env.EXPIRATION || "5");
 const jwtKey = process.env.JWT || "SomeJwT_keY";
@@ -77,6 +79,7 @@ userRouter.post(
       throw new BadRequestError(
         `User with ${phone} and ${email} already exists`
       );
+
     let user = await User.build({
       name,
       surname,
@@ -103,6 +106,8 @@ userRouter.post(
       phone: user.phone,
       name: user.name,
       surname: user.surname,
+      address: user.address,
+      email: user.email,
       token,
     });
   }
@@ -152,28 +157,20 @@ userRouter.put(
 
     if (author.exp && author.exp < Date.now())
       throw new BadRequestError("Token expired");
-    let update = { ...req.body.user };
-    const p =
-      req.body.user.password &&
-      (await Password.hashPassword(req.body.user.password));
+
     let query = {};
     if (author._id) {
       query = { ...query, _id: author._id };
     }
     if (author.phone) {
-      query = { ...query, phoneNumber: author.phone };
-    }
-    if (p) {
-      update = {
-        ...update,
-        password: `${p.buff}.${p.salt}`,
-      };
+      query = { ...query, phone: author.phone };
     }
 
-    const user = await User.findOneAndUpdate(query, update).select({
-      password: 0,
+    const user = await User.findOneAndUpdate(query, req.body.user, {
+      new: true,
     });
-
+    console.log(user);
+    if (!user) throw new NotFoundError("User Not Found");
     res.send(user);
   }
 );
