@@ -3,6 +3,7 @@ export default interface IUserPayload {
   phone: string;
   email: string;
   name: string;
-  surname:string;
+  surname: string;
   exp: number;
+  expiresIn?: number;
 }

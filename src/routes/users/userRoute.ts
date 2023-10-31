@@ -49,12 +49,11 @@ userRouter.put("/verify", async (req: Req, res: Response) => {
   const token = jwt.sign(
     {
       phone,
+      expiresIn: Date.now() + parseInt(process.env.EXPIRATION || "5") * 60000,
     },
     jwtKey,
     {
-      expiresIn: new Date(
-        Date.now() + parseInt(process.env.EXPIRATION || "5") * 60000
-      ).getTime(),
+      expiresIn: Date.now() + parseInt(process.env.EXPIRATION || "5") * 60000,
     }
   );
   res.send({ message: `User with ${phone} is verified`, token });
@@ -65,6 +64,10 @@ userRouter.post(
   async (req: Req, res: Response) => {
     const { name, surname, phone, email, password, dateOfBirth, address } =
       req.body.user;
+    const author = JWTDecrypter.decryptUser<IUserPayload>(req, jwtKey);
+
+    if (author.expiresIn && author.expiresIn < Date.now())
+      throw new BadRequestError("Token expired");
     const otp = await OTP.findOne({
       phone,
       isVerified: true,
@@ -137,12 +140,11 @@ userRouter.post(
       },
       jwtKey
     );
+    let u = { ...user.toObject() };
+    delete u.password;
+
     res.send({
-      _id: user._id,
-      name: user.name,
-      surname: user.surname,
-      phone: user.phone,
-      email: user.email,
+      ...u,
       token,
     });
   }

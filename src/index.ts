@@ -8,7 +8,7 @@ const mongo = process.env.MONGO;
 const mongoCloud = process.env.MONGO_CLOUD;
 function startServer() {
   try {
-    mongoose.connect(mongoCloud!).then(() => {
+    mongoose.connect(mongo!).then(() => {
       console.log("Database connected");
 
       app.listen(port, () => {
